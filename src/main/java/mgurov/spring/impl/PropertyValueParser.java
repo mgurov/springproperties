@@ -11,6 +11,7 @@ public class PropertyValueParser {
     //TODO: configurable placeholder markers
     public static final Pattern PATTERN = Pattern.compile("\\$\\{(.*?)\\}");
 
+    //TODO: non-String interface for performance?
     public static interface OnStringPartParsedEventListener {
         void onStart();
         void onResolvedStringPart(String part);
@@ -24,18 +25,12 @@ public class PropertyValueParser {
      * @return the listener passed
      */
     <T extends OnStringPartParsedEventListener> T parse(String value, T listener) {
+
         listener.onStart();
 
-        Matcher m = PATTERN.matcher(value);
-        if (!m.find()) {
-            listener.onResolvedStringPart(value);
-            listener.onEnd();
-            return listener;
-            //TODO: could we avoid this special case? I think so.
-        }
-
+        final Matcher m = PATTERN.matcher(value);
         int unclaimedPosition = 0;
-        do {
+        while (m.find()) {
             if (m.start() > unclaimedPosition) {
                 //TODO: char sequences?
                 listener.onResolvedStringPart(value.substring(unclaimedPosition, m.start()));
@@ -43,7 +38,7 @@ public class PropertyValueParser {
             unclaimedPosition = m.end();
 
             listener.onPlaceholderPart(m.group(1));
-        } while (m.find());
+        }
 
         if (unclaimedPosition < value.length() - 1) {
             listener.onResolvedStringPart(value.substring(unclaimedPosition));
