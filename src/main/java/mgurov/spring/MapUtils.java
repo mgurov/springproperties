@@ -5,6 +5,8 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -13,42 +15,81 @@ import java.util.regex.Pattern;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
 
-/**
- * Utility that merges maps (or property files) according to the following rules:
- * <ul>
- *     <li>property defined in a later file overwrites property with the same key defined earlier</li>
- *     <li>property values may contain placeholders to be replaced by referenced key values.</li>
- *     <li>placeholder denoted by a pair of <em>${</em> and <em>}</em></li>
- *     <li>default values are not supported and the placeholder left intact in case referenced key is missing</li>
- * </ul>
- *
- * The utility was initially supposed to enhance Spring property loading but I quickly realized that I can achieve the goals
- * of that moment by rearrangign the way I loaded properties with the help of Spring's PropertyPlaceholderConfigurer so
- * this remains just as a small excercise.
- *
- */
 public class MapUtils {
 
+    /**
+     * Utility that merges maps (or property files) according to the following rules:
+     * <ul>
+     *     <li>property defined in a later file overwrites property with the same key defined earlier</li>
+     *     <li>property values may contain placeholders to be replaced by referenced key values.</li>
+     *     <li>placeholder denoted by a pair of <em>${</em> and <em>}</em></li>
+     *     <li>default values are not supported and the placeholder left intact in case referenced key is missing</li>
+     * </ul>
+     *
+     * The utility was initially supposed to enhance Spring property loading but I quickly realized that I can achieve the goals
+     * of that moment by rearrangign the way I loaded properties with the help of Spring's PropertyPlaceholderConfigurer so
+     * this remains just as a small excercise.
+     *
+     */
     public static Map<String, String> merge(Map<String, String>... inputs) {
-
-        //TODO: simpler strategy as alternative
-
-        final ResolutionTree resolutionTree = new ResolutionTree();
-
-        for (Map<String, String> input : inputs) {
-            resolutionTree.add(input);
-        }
-
-        resolutionTree.resolveFutures();
-
-        return resolutionTree.valuesToStrings();
+        return merge(MergeAlgorithm.TREE, inputs);
     }
 
-    private static class ResolutionTree {
+    public static Map<String, String> merge(MergeAlgorithm algorithm, Map<String, String>... inputs) {
+        return algorithm.newMerger().merge(Arrays.asList(inputs));
+    }
+
+    public enum MergeAlgorithm {
+        SIMPLE{
+            @Override
+            protected Merger newMerger() {
+                return null;
+            }
+        } ,
+        TREE {
+            @Override
+            protected Merger newMerger() {
+                return new ResolutionTree();
+            }
+        };
+
+        protected abstract Merger newMerger();
+
+    }
+
+
+
+    private interface Merger {
+        Map<String, String> merge(Iterable<Map<String, String>> inputs);
+    }
+
+    private static class SimpleMapsMerger implements Merger {
+
+        @Override
+        public Map<String, String> merge(Iterable<Map<String, String>> inputs) {
+            final HashMap<String,String> result = newHashMap();
+            for (Map<String, String> input : inputs) {
+                result.putAll(input);
+            }
+            return result;
+        }
+    }
+
+    private static class ResolutionTree implements Merger {
         final Map<String, EntryPart> keyDefinitions = newHashMap();
         final Map<String, FutureReference> futures = newHashMap();
 
-        public void add(Map<String, String> input) {
+        @Override
+        public Map<String, String> merge(Iterable<Map<String, String>> inputs) {
+            for (Map<String, String> input : inputs) {
+                add(input);
+            }
+            resolveFutures();
+            return valuesToStrings();
+        }
+
+
+        private void add(Map<String, String> input) {
             for (Map.Entry<String, String> sourceMapEntry : input.entrySet()) {
                 //TODO: what if we override? Here we might want to distinguish between the prototypes and the rest
                 keyDefinitions.put(sourceMapEntry.getKey(), parseEntry(sourceMapEntry.getValue()));
