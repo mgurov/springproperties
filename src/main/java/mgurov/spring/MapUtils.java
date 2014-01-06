@@ -36,7 +36,7 @@ public class MapUtils {
     }
 
     public static Map<String, String> merge(MergeAlgorithm algorithm, Map<String, String>... inputs) {
-        return algorithm.newMerger().merge(Arrays.asList(inputs));
+        return algorithm.newMerger().merge(Arrays.asList(inputs), new PropertyValueParser());
     }
 
     public enum MergeAlgorithm {
@@ -57,21 +57,107 @@ public class MapUtils {
 
     }
 
-
-
     private interface Merger {
-        Map<String, String> merge(Iterable<Map<String, String>> inputs);
+        Map<String, String> merge(Iterable<Map<String, String>> inputs, PropertyValueParser propertyValueParser);
     }
 
     private static class SimpleMapsMerger implements Merger {
 
+        private final HashMap<String,String> squashedMap = newHashMap();
+        private PropertyValueParser propertyValueParser;
+
         @Override
-        public Map<String, String> merge(Iterable<Map<String, String>> inputs) {
-            final HashMap<String,String> result = newHashMap();
+        public Map<String, String> merge(Iterable<Map<String, String>> inputs, PropertyValueParser propertyValueParser) {
+
+            this.propertyValueParser = propertyValueParser;
+
             for (Map<String, String> input : inputs) {
-                result.putAll(input);
+                squashedMap.putAll(input);
             }
+
+
+            final Map<String, String> result = newHashMap();
+            for (Map.Entry<String, String> stringStringEntry : squashedMap.entrySet()) {
+                result.put(stringStringEntry.getKey(), resolveValue(stringStringEntry.getValue()));
+            }
+
             return result;
+        }
+
+        private String resolveValue(String value) {
+            return propertyValueParser.parse(value, new MyOnStringPartParsedEventListener()).result.toString();
+        }
+
+        private class MyOnStringPartParsedEventListener implements OnStringPartParsedEventListener {
+            private StringBuilder result;
+
+            @Override
+            public void onStart() {
+                result = new StringBuilder();
+            }
+
+            @Override
+            public void onString(String part) {
+                result.append(part);
+            }
+
+            @Override
+            public void onPlaceholder(String placeholder) {
+                String value = squashedMap.get(placeholder);
+                if (null == value) {
+                    //TODO: wrapping of the placeholder could be delegated back to the parser probably, although would be weird
+                    result.append("${").append(placeholder).append("}");
+                } else {
+                    result.append(resolveValue(value));
+                }
+            }
+
+            @Override
+            public void onEnd() {
+            }
+        }
+    }
+
+    private interface OnStringPartParsedEventListener {
+        void onStart();
+        void onString(String part);
+        void onPlaceholder(String placeholder);
+        void onEnd();
+    }
+
+    private static class PropertyValueParser {
+        /**
+         * Notifies the listener about the parts of string parsed from the value
+         * @return the listener passed
+         */
+        <T extends OnStringPartParsedEventListener> T parse(String value, T listener) {
+            listener.onStart();
+            //TODO: configurable placeholder markers
+            Pattern p = Pattern.compile("\\$\\{(.*?)\\}");
+            Matcher m = p.matcher(value);
+            if (!m.find()) {
+                listener.onString(value);
+                listener.onEnd();
+                return listener;
+            }
+
+            int unclaimedPosition = 0;
+            do {
+                if (m.start() > unclaimedPosition) {
+                    //TODO: char sequences?
+                    listener.onString(value.substring(unclaimedPosition, m.start()));
+                }
+                unclaimedPosition = m.end();
+
+                listener.onPlaceholder(m.group(1));
+            } while (m.find());
+
+            if (unclaimedPosition < value.length() - 1) {
+                listener.onString(value.substring(unclaimedPosition));
+            }
+
+            listener.onEnd();
+            return listener;
         }
     }
 
@@ -80,7 +166,7 @@ public class MapUtils {
         final Map<String, FutureReference> futures = newHashMap();
 
         @Override
-        public Map<String, String> merge(Iterable<Map<String, String>> inputs) {
+        public Map<String, String> merge(Iterable<Map<String, String>> inputs, PropertyValueParser propertyValueParser) {
             for (Map<String, String> input : inputs) {
                 add(input);
             }
