@@ -17,15 +17,15 @@ import static org.junit.Assert.fail;
 @RunWith(Parameterized.class)
 public class MapMergingTest {
 
-    private final MapUtils.MergeAlgorithm mergeAlgorithm;
+    private final MapsMergeAlgorithm mergeAlgorithm;
 
-    public MapMergingTest(MapUtils.MergeAlgorithm mergeAlgorithm) {
+    public MapMergingTest(MapsMergeAlgorithm mergeAlgorithm) {
         this.mergeAlgorithm = mergeAlgorithm;
     }
 
     @Parameterized.Parameters(name= "{index}: {0}")
     public static Iterable<Object[]> data() {
-        return Arrays.asList(new Object[]{MapUtils.MergeAlgorithm.SIMPLE}, new Object[]{MapUtils.MergeAlgorithm.TREE});
+        return Arrays.asList(new Object[]{MapsMergeAlgorithm.SIMPLE_SQUASH}, new Object[]{MapsMergeAlgorithm.BUILD_TREE});
     }
 
     @Test
