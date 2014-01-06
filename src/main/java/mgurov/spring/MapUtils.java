@@ -43,7 +43,7 @@ public class MapUtils {
         SIMPLE{
             @Override
             protected Merger newMerger() {
-                return null;
+                return new SimpleMapsMerger();
             }
         } ,
         TREE {

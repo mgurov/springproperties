@@ -4,14 +4,29 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
+@RunWith(Parameterized.class)
 public class MapMergingTest {
+
+    private final MapUtils.MergeAlgorithm mergeAlgorithm;
+
+    public MapMergingTest(MapUtils.MergeAlgorithm mergeAlgorithm) {
+        this.mergeAlgorithm = mergeAlgorithm;
+    }
+
+    @Parameterized.Parameters(name= "{index}: {0}")
+    public static Iterable<Object[]> data() {
+        return Arrays.asList(new Object[]{MapUtils.MergeAlgorithm.SIMPLE}, new Object[]{MapUtils.MergeAlgorithm.TREE});
+    }
 
     @Test
     public void prototypedLoadingWithLookAhead() {
@@ -20,7 +35,7 @@ public class MapMergingTest {
 
         assertEquals(
                 ImmutableMap.<String, String>builder().put("inherited property expanded later", "http://id.blah/fooe").put("later.defined", "blah").build(),
-                MapUtils.merge(inheritor, prototype));
+                MapUtils.merge(mergeAlgorithm, inheritor, prototype));
     }
 
 
@@ -34,7 +49,7 @@ public class MapMergingTest {
                 ImmutableMap.<String, String>builder()
                         .put("forward.reference", "value")
                         .put("referenced.earlier", "value").build(),
-                MapUtils.merge(data));
+                MapUtils.merge(mergeAlgorithm, data));
     }
 
     @Test
@@ -47,7 +62,7 @@ public class MapMergingTest {
                 ImmutableMap.<String, String>builder()
                         .put("backward.reference", "value")
                         .put("referenced.later", "value").build(),
-                MapUtils.merge(data));
+                MapUtils.merge(mergeAlgorithm, data));
     }
 
     @Test
@@ -58,7 +73,7 @@ public class MapMergingTest {
         assertEquals(
                 ImmutableMap.<String, String>builder()
                         .put("unresolved.reference", "${http404}").build(),
-                MapUtils.merge(data));
+                MapUtils.merge(mergeAlgorithm, data));
     }
 
     @Test
@@ -71,7 +86,7 @@ public class MapMergingTest {
                 ImmutableMap.<String, String>builder()
                         .put("forward.reference", "value and again value")
                         .put("referenced.earlier", "value").build(),
-                MapUtils.merge(data));
+                MapUtils.merge(mergeAlgorithm, data));
     }
 
     @Test
