@@ -2,12 +2,14 @@ package mgurov.spring;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Collections;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 public class MapMergingTest {
 
@@ -70,6 +72,12 @@ public class MapMergingTest {
                         .put("forward.reference", "value and again value")
                         .put("referenced.earlier", "value").build(),
                 MapUtils.merge(data));
+    }
+
+    @Test
+    @Ignore
+    public void detectCircularDependency() {
+        fail("Not implemented yet");
     }
 
 }
