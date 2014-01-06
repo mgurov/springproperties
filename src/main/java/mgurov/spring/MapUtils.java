@@ -162,11 +162,14 @@ public class MapUtils {
     }
 
     private static class ResolutionTree implements Merger {
-        final Map<String, EntryPart> keyDefinitions = newHashMap();
-        final Map<String, FutureReference> futures = newHashMap();
+        private final Map<String, EntryPart> keyDefinitions = newHashMap();
+        private final Map<String, FutureReference> futures = newHashMap();
+        private PropertyValueParser propertyValueParser;
 
         @Override
         public Map<String, String> merge(Iterable<Map<String, String>> inputs, PropertyValueParser propertyValueParser) {
+            //TODO: via constructor
+            this.propertyValueParser = propertyValueParser;
             for (Map<String, String> input : inputs) {
                 add(input);
             }
@@ -183,48 +186,7 @@ public class MapUtils {
         }
 
         private EntryPart parseEntry(String value) {
-            //TODO: configurable placeholder markers
-            Pattern p = Pattern.compile("\\$\\{(.*?)\\}");
-            Matcher m = p.matcher(value);
-            if (!m.find()) {
-                return new LeafString(value);
-            }
-
-            final List<EntryPart> entries = newArrayList();
-            int unclaimedPosition = 0;
-
-            do {
-                if (m.start() > unclaimedPosition) {
-                    //TODO: char sequences?
-                    entries.add(new LeafString(value.substring(unclaimedPosition, m.start())));
-                }
-                unclaimedPosition = m.end();
-
-                final String refName = m.group(1);
-                final EntryPart alreadyResolved;
-                if (null == (alreadyResolved = keyDefinitions.get(refName))) {
-
-                    FutureReference future = futures.get(refName);
-                    if (null == future) {
-                        future = new FutureReference(refName);
-                        futures.put(refName, future);
-                    }
-                    entries.add(future);
-                } else {
-                    entries.add(alreadyResolved);
-                }
-
-            } while (m.find());
-
-            if (unclaimedPosition < value.length() - 1) {
-                entries.add(new LeafString(value.substring(unclaimedPosition)));
-            }
-
-            if (entries.size() == 1) {
-                return entries.get(0);
-            } else {
-                return new CompositePart(entries);
-            }
+            return propertyValueParser.parse(value, new MyOnStringPartParsedEventListener()).result;
         }
 
         private void resolveFutures() {
@@ -235,6 +197,48 @@ public class MapUtils {
 
         public Map<String, String> valuesToStrings() {
             return Maps.transformValues(keyDefinitions, EntryPart.TO_S);
+        }
+
+        private class MyOnStringPartParsedEventListener implements OnStringPartParsedEventListener {
+
+            public EntryPart result;
+
+            private List<EntryPart> partsCollected;
+
+            @Override
+            public void onStart() {
+                partsCollected = newArrayList();
+            }
+
+            @Override
+            public void onString(String part) {
+                partsCollected.add(new LeafString(part));
+            }
+
+            @Override
+            public void onPlaceholder(String placeholder) {
+                final EntryPart alreadyResolved;
+                if (null != (alreadyResolved = keyDefinitions.get(placeholder))) {
+                    partsCollected.add(alreadyResolved);
+                    return;
+                }
+
+                FutureReference future = futures.get(placeholder);
+                if (null == future) {
+                    future = new FutureReference(placeholder);
+                    futures.put(placeholder, future);
+                }
+                partsCollected.add(future);
+            }
+
+            @Override
+            public void onEnd() {
+                if (partsCollected.size() == 1) {
+                    result = partsCollected.get(0);
+                } else {
+                    result = new CompositePart(partsCollected);
+                }
+            }
         }
     }
 
