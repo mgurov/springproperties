@@ -16,6 +16,7 @@ import static com.google.common.collect.Maps.newHashMap;
  * a composite containing resolved string and "futures" to be resolved. Could potentially be more efficient on large datasets
  * with deep nesting and high degree of key repetition. On the downside futures tend to hang even if overriding properties do not need them
  * which could probably be overidden careful use of {@link java.util.WeakHashMap}
+ * This method has a flaw of complicated circular reference detection which hasn't been implemented.
  * TODO: measure
  */
 public class ResolutionTree implements MapsMerger {
