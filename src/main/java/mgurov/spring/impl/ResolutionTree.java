@@ -21,12 +21,14 @@ import static com.google.common.collect.Maps.newHashMap;
 public class ResolutionTree implements MapsMerger {
     private final Map<String, EntryPart> keyDefinitions = newHashMap();
     private final Map<String, FutureReference> futures = newHashMap();
-    private PropertyValueParser propertyValueParser;
+    private final PropertyValueParser propertyValueParser;
+
+    public ResolutionTree(PropertyValueParser propertyValueParser) {
+        this.propertyValueParser = propertyValueParser;
+    }
 
     @Override
-    public Map<String, String> merge(Iterable<Map<String, String>> inputs, PropertyValueParser propertyValueParser) {
-        //TODO: via constructor?
-        this.propertyValueParser = propertyValueParser;
+    public Map<String, String> merge(Iterable<Map<String, String>> inputs) {
         for (Map<String, String> input : inputs) {
             add(input);
         }

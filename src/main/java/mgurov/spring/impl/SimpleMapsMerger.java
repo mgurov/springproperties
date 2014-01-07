@@ -12,12 +12,14 @@ import static com.google.common.collect.Maps.newHashMap;
 public class SimpleMapsMerger implements MapsMerger {
 
     private final HashMap<String,String> squashedMap = newHashMap();
-    private PropertyValueParser propertyValueParser;
+    private final PropertyValueParser propertyValueParser;
+
+    public SimpleMapsMerger(PropertyValueParser propertyValueParser) {
+        this.propertyValueParser = propertyValueParser;
+    }
 
     @Override
-    public Map<String, String> merge(Iterable<Map<String, String>> inputs, PropertyValueParser propertyValueParser) {
-
-        this.propertyValueParser = propertyValueParser;
+    public Map<String, String> merge(Iterable<Map<String, String>> inputs) {
 
         for (Map<String, String> input : inputs) {
             squashedMap.putAll(input);

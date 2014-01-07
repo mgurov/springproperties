@@ -27,7 +27,7 @@ public class MapUtils {
     }
 
     public static Map<String, String> merge(MapsMergeAlgorithm algorithm, Map<String, String>... inputs) {
-        return algorithm.newMerger().merge(Arrays.asList(inputs), new PropertyValueParser());
+        return algorithm.newMerger(new PropertyValueParser()).merge(Arrays.asList(inputs));
     }
 
 }
