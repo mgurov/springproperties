@@ -29,14 +29,20 @@ public class ResolutionTree implements MapsMerger {
 
     @Override
     public Map<String, String> merge(Iterable<Map<String, String>> inputs) {
+        //TODO: consider accepting single "presquashed" map.
+
+        final Map<String,String> squashedInput = newHashMap();
         for (Map<String, String> input : inputs) {
-            add(input);
+            squashedInput.putAll(input);
         }
+
+        add(squashedInput);
         resolveFutures();
         return valuesToStrings();
     }
 
 
+    //TODO: rename
     private void add(Map<String, String> input) {
         for (Map.Entry<String, String> sourceMapEntry : input.entrySet()) {
             keyDefinitions.put(sourceMapEntry.getKey(), parseEntry(sourceMapEntry.getValue()));

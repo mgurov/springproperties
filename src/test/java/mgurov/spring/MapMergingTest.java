@@ -2,7 +2,6 @@ package mgurov.spring;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-import mgurov.spring.impl.CircularReferenceException;
 import mgurov.spring.impl.PropertyValueParser;
 import org.junit.Test;
 import org.junit.runner.RunWith;

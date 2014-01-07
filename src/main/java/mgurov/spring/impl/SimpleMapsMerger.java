@@ -1,5 +1,7 @@
 package mgurov.spring.impl;
 
+import mgurov.spring.CircularReferenceException;
+
 import java.util.*;
 
 import static com.google.common.collect.Maps.newHashMap;

@@ -1,4 +1,4 @@
-package mgurov.spring.impl;
+package mgurov.spring;
 
 public class CircularReferenceException extends RuntimeException {
     public CircularReferenceException(String keyRefererence) {
