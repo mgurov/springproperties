@@ -8,8 +8,15 @@ import java.util.regex.Pattern;
  */
 public class PropertyValueParser {
 
-    //TODO: configurable placeholder markers
-    public static final Pattern PATTERN = Pattern.compile("(\\$\\{(.*?)\\})");
+    private final Pattern pattern;
+
+    public PropertyValueParser() {
+        this("${", "}");
+    }
+
+    public PropertyValueParser(String prefix, String suffix) {
+        pattern = Pattern.compile(String.format("(%s(.*?)%s)", Pattern.quote(prefix), Pattern.quote(suffix)));
+    }
 
     //TODO: non-String interface for performance?
     public static interface OnStringPartParsedEventListener {
@@ -33,7 +40,7 @@ public class PropertyValueParser {
 
         listener.onStart();
 
-        final Matcher m = PATTERN.matcher(value);
+        final Matcher m = pattern.matcher(value);
         int unclaimedPosition = 0;
         while (m.find()) {
             if (m.start() > unclaimedPosition) {

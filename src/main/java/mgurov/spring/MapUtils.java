@@ -26,8 +26,15 @@ public class MapUtils {
         return merge(MapsMergeAlgorithm.BUILD_TREE, inputs);
     }
 
+    /**
+     * calls {@link #merge(MapsMergeAlgorithm, mgurov.spring.impl.PropertyValueParser, java.util.Map[])} with default ${link PropertyValueParser}
+     */
     public static Map<String, String> merge(MapsMergeAlgorithm algorithm, Map<String, String>... inputs) {
-        return algorithm.newMerger(new PropertyValueParser()).merge(Arrays.asList(inputs));
+        return merge(algorithm, new PropertyValueParser(), inputs);
+    }
+
+    public static Map<String, String> merge(MapsMergeAlgorithm algorithm, PropertyValueParser propertyValueParser, Map<String, String>... inputs) {
+        return algorithm.newMerger(propertyValueParser).merge(Arrays.asList(inputs));
     }
 
 }

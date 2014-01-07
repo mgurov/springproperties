@@ -2,6 +2,7 @@ package mgurov.spring;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import mgurov.spring.impl.PropertyValueParser;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -87,6 +88,19 @@ public class MapMergingTest {
                         .put("forward.reference", "value and again value")
                         .put("referenced.earlier", "value").build(),
                 MapUtils.merge(mergeAlgorithm, data));
+    }
+
+    @Test
+    public void modifiedPlaceholderSuffixAndPrefix() {
+        Map<String, String> data = Maps.newLinkedHashMap();
+        data.put("forward.reference", "#(referenced.earlier) and #(unresolved)");
+        data.put("referenced.earlier", "value");
+
+        assertEquals(
+                ImmutableMap.<String, String>builder()
+                        .put("forward.reference", "value and #(unresolved)")
+                        .put("referenced.earlier", "value").build(),
+                MapUtils.merge(mergeAlgorithm, new PropertyValueParser("#(", ")"), data));
     }
 
     @Test
