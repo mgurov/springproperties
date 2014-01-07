@@ -46,8 +46,8 @@ public class ResolutionTree implements MapsMerger {
     }
 
     private void resolveFutures() {
-        for (FutureReference future : futures.values()) {
-            future.resolve(keyDefinitions.get(future.name));
+        for (Map.Entry<String, FutureReference> keyToFuture : futures.entrySet()) {
+            keyToFuture.getValue().resolve(keyDefinitions.get(keyToFuture.getKey()));
         }
     }
 
@@ -90,18 +90,18 @@ public class ResolutionTree implements MapsMerger {
     }
 
     private static class FutureReference implements EntryPart {
-        private final String name;
+        private final String originalPlaceholder;
         //TODO: mutability is evil. Replace LeafString ?
         private EntryPart resolvedValue;
 
         private FutureReference(String name) {
-            this.name = name;
+            this.originalPlaceholder = name;
         }
 
         @Override
         public String toS() {
             if (null == resolvedValue) {
-                return "${" + name + "}";
+                return originalPlaceholder;
             }
             return resolvedValue.toS();
         }
@@ -113,7 +113,7 @@ public class ResolutionTree implements MapsMerger {
         @Override
         public String toString() {
             return "FutureReference{" +
-                    "name='" + name + '\'' +
+                    "originalPlaceholder='" + originalPlaceholder + '\'' +
                     ", resolvedValue=" + resolvedValue +
                     '}';
         }
@@ -154,17 +154,17 @@ public class ResolutionTree implements MapsMerger {
         }
 
         @Override
-        public void onPlaceholderPart(String placeholder) {
+        public void onPlaceholderPart(String keyReference, String placeholder) {
             final EntryPart alreadyResolved;
-            if (null != (alreadyResolved = keyDefinitions.get(placeholder))) {
+            if (null != (alreadyResolved = keyDefinitions.get(keyReference))) {
                 partsCollected.add(alreadyResolved);
                 return;
             }
 
-            FutureReference future = futures.get(placeholder);
+            FutureReference future = futures.get(keyReference);
             if (null == future) {
                 future = new FutureReference(placeholder);
-                futures.put(placeholder, future);
+                futures.put(keyReference, future);
             }
             partsCollected.add(future);
         }

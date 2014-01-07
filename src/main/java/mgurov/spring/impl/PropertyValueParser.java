@@ -9,14 +9,19 @@ import java.util.regex.Pattern;
 public class PropertyValueParser {
 
     //TODO: configurable placeholder markers
-    public static final Pattern PATTERN = Pattern.compile("\\$\\{(.*?)\\}");
+    public static final Pattern PATTERN = Pattern.compile("(\\$\\{(.*?)\\})");
 
     //TODO: non-String interface for performance?
     public static interface OnStringPartParsedEventListener {
         void onStart();
+
         void onResolvedStringPart(String part);
-        //TODO: send the original entry I think
-        void onPlaceholderPart(String placeholder);
+
+        /**
+         * @param keyReference the bare key without prefix and suffix
+         * @param placeholder original placeholder string with prefix and suffix, e.g. ${key}
+         */
+        void onPlaceholderPart(String keyReference, String placeholder);
         void onEnd();
     }
 
@@ -37,7 +42,7 @@ public class PropertyValueParser {
             }
             unclaimedPosition = m.end();
 
-            listener.onPlaceholderPart(m.group(1));
+            listener.onPlaceholderPart(m.group(2), m.group(1));
         }
 
         if (unclaimedPosition < value.length() - 1) {

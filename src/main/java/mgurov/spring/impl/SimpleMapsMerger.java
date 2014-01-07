@@ -23,7 +23,6 @@ public class SimpleMapsMerger implements MapsMerger {
             squashedMap.putAll(input);
         }
 
-
         final Map<String, String> result = newHashMap();
         for (Map.Entry<String, String> stringStringEntry : squashedMap.entrySet()) {
             result.put(stringStringEntry.getKey(), resolveValue(stringStringEntry.getValue()));
@@ -50,13 +49,12 @@ public class SimpleMapsMerger implements MapsMerger {
         }
 
         @Override
-        public void onPlaceholderPart(String placeholder) {
-            String value = squashedMap.get(placeholder);
-            if (null == value) {
-                //TODO: wrapping of the placeholder could be delegated back to the parser probably, although would be weird
-                result.append("${").append(placeholder).append("}");
-            } else {
+        public void onPlaceholderPart(String keyRefererence, String placeholder) {
+            final String value = squashedMap.get(keyRefererence);
+            if (null != value) {
                 result.append(resolveValue(value));
+            } else {
+                result.append(placeholder);
             }
         }
 
