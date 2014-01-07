@@ -2,8 +2,8 @@ package mgurov.spring;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import mgurov.spring.impl.CircularReferenceException;
 import mgurov.spring.impl.PropertyValueParser;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -13,7 +13,6 @@ import java.util.Collections;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
 @RunWith(Parameterized.class)
 public class MapMergingTest {
@@ -103,10 +102,13 @@ public class MapMergingTest {
                 MapUtils.merge(mergeAlgorithm, new PropertyValueParser("#(", ")"), data));
     }
 
-    @Test
-    @Ignore
+    @Test(expected = CircularReferenceException.class)
     public void detectCircularDependency() {
-        fail("Not implemented yet");
+        Map<String, String> data = Maps.newLinkedHashMap();
+        data.put("forward.reference", "${referenced.earlier}");
+        data.put("referenced.earlier", "closing the circle ${forward.reference}");
+
+        assertEquals("", MapUtils.merge(mergeAlgorithm, data));
     }
 
 }

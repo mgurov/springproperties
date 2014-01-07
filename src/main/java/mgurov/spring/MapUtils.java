@@ -9,6 +9,7 @@ import java.util.Map;
 public class MapUtils {
 
     /**
+     * TODO: rename and javadoc
      * Utility that merges maps (or property files) according to the following rules:
      * <ul>
      *     <li>property defined in a later file overwrites property with the same key defined earlier</li>
