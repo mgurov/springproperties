@@ -8,7 +8,7 @@ import static org.junit.Assert.assertEquals;
 
 public class PropertyFilesSplittingTest {
 
-    private final PropertyFileNamesCommaSeparatedSplitter cut = new PropertyFileNamesCommaSeparatedSplitter();
+    private final PropertyFileNamesSplitter cut = new PropertyFileNamesSplitter();
 
     @Test
     public void byDefaultSimplySplitInput() {
@@ -35,7 +35,7 @@ public class PropertyFilesSplittingTest {
     public void prototypingFunctionInjectsFoundPrototypesWrappedByPrefixAndSuffix() {
         cut.setPrefix("c:");
         cut.setSuffix(".p");
-        cut.setPrototypeNamesFinder(new PropertyFileNamesCommaSeparatedSplitter.PrototypesNameFinder() {
+        cut.setPrototypeNamesFinder(new PropertyFileNamesSplitter.PrototypesNameFinder() {
             @Override
             public String findPrototypeName(String input) {
                 if (input.equals("c:thenPrototyped.p")) {
@@ -53,7 +53,7 @@ public class PropertyFilesSplittingTest {
 
     @Test
     public void IgnoreEmptyStringReturnedByPrototypingFunction() {
-        cut.setPrototypeNamesFinder(new PropertyFileNamesCommaSeparatedSplitter.PrototypesNameFinder() {
+        cut.setPrototypeNamesFinder(new PropertyFileNamesSplitter.PrototypesNameFinder() {
             @Override
             public String findPrototypeName(String input) {
                 return " ";

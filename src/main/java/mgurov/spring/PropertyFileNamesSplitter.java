@@ -22,7 +22,7 @@ import static com.google.common.collect.Lists.newArrayList;
  * </pre>
  *
  */
-public class PropertyFileNamesCommaSeparatedSplitter {
+public class PropertyFileNamesSplitter {
 
     public static final Splitter COMMA_SPLITTER = Splitter.on(',').omitEmptyStrings().trimResults();
     private Function<String, String> prefixFunction = Functions.identity();
