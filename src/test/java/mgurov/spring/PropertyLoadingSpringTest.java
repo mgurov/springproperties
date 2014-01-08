@@ -4,10 +4,15 @@ package mgurov.spring;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceEditor;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Map;
+import java.util.Properties;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -36,7 +41,7 @@ public class PropertyLoadingSpringTest {
 
     @Test
     public void templatedPropertyShallGetNameSubstituted() {
-        assertEquals("template applied to ${name}", bean.get("template"));
+        assertEquals("template applied to sample", bean.get("template"));
     }
 
     public static class Bean {
@@ -48,6 +53,34 @@ public class PropertyLoadingSpringTest {
 
         public String get(String key) {
             return data.get(key);
+        }
+    }
+
+    public static class KeyPrototypeFinder implements PropertyFileNamesSplitter.PrototypesNameFinder {
+
+        private String prototypeKey = "prototype";
+
+        @Override
+        public String findPrototypeName(String input) {
+
+            //In Spring do like Spring does.
+            final ResourceEditor re = new ResourceEditor();
+            re.setAsText(input);
+            final Resource location = (Resource) re.getValue();
+            final Properties properties = new Properties();
+
+            try {
+                final InputStream is = location.getInputStream();
+                properties.load(is);
+                is.close();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            return properties.getProperty(prototypeKey);
+        }
+
+        public void setPrototypeKey(String prototypeKey) {
+            this.prototypeKey = prototypeKey;
         }
     }
 }

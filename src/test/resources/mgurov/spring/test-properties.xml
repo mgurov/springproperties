@@ -20,6 +20,11 @@
     <bean id="classUnderTest" class="mgurov.spring.PropertyFileNamesSplitter">
         <property name="prefix" value="classpath:mgurov/spring/"/>
         <property name="suffix" value=".properties"/>
+        <property name="prototypeNamesFinder">
+            <bean class="mgurov.spring.PropertyLoadingSpringTest.KeyPrototypeFinder">
+                <property name="prototypeKey" value="this.prototype"/>
+            </bean>
+        </property>
     </bean>
 
     <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
