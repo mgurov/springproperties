@@ -16,10 +16,22 @@ import static com.google.common.collect.Lists.newArrayList;
  * * configurable prototype provider to put prototypes in front of the split string <br/>
  * <br/>
  * Example
- * <pre>
- *    TODO
- * </pre>
+ * <pre class="code">{@code
+ * <bean id="classUnderTest" class="mgurov.spring.PropertyFileNamesSplitter">
+ *     <property name="prefix" value="classpath:mgurov/spring/"/>
+ *     <property name="suffix" value=".properties"/>
+ * </bean>
  *
+ * <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+ *     <property name="locations">
+ *         <bean factory-bean="classUnderTest" factory-method="split">
+ *             <constructor-arg name="commaSeparatedPropertyFileNames" value="test-prototype,test-sample"/>
+ *         </bean>
+ *     </property>
+ *     <property name="ignoreUnresolvablePlaceholders" value="true"/>
+ * </bean>
+ * }
+ * </pre>
  */
 public class PropertyFileNamesSplitter {
 
@@ -47,7 +59,6 @@ public class PropertyFileNamesSplitter {
 
     public interface PrototypesNameFinder {
         /**
-         *
          * @param input property file name (wrapped prefix and suffix)
          * @return string containing comma separated list of unwrapped prototype names
          */
