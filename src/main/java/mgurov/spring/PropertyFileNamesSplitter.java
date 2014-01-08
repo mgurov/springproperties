@@ -4,7 +4,6 @@ import com.google.common.base.Function;
 import com.google.common.base.Functions;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
-import com.sun.istack.internal.Nullable;
 
 import java.util.List;
 
@@ -52,7 +51,7 @@ public class PropertyFileNamesSplitter {
          * @param input property file name (wrapped prefix and suffix)
          * @return string containing comma separated list of unwrapped prototype names
          */
-        @Nullable String findPrototypeName(String input);
+        String findPrototypeName(String input);
     }
 
     public void setPrototypeNamesFinder(PrototypesNameFinder prototypeNamesFinder) {
@@ -60,7 +59,6 @@ public class PropertyFileNamesSplitter {
     }
 
     public static final PrototypesNameFinder NO_PROTO = new PrototypesNameFinder() {
-        @Nullable
         @Override
         public String findPrototypeName(String input) {
             return null;
@@ -83,7 +81,6 @@ public class PropertyFileNamesSplitter {
         }
     }
 
-    //TODO: nullables below
     private static class PreffixStringFunction implements Function<String, String> {
         private final String prefix;
 
