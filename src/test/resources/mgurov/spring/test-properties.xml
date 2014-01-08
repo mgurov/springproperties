@@ -17,8 +17,17 @@
         </constructor-arg>
     </bean>
 
+    <bean id="classUnderTest" class="mgurov.spring.PropertyFileNamesSplitter">
+        <property name="prefix" value="classpath:mgurov/spring/"/>
+        <property name="suffix" value=".properties"/>
+    </bean>
+
     <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
-        <property name="locations" value="classpath:mgurov/spring/test-sample.properties"/>
+        <property name="locations">
+            <bean factory-bean="classUnderTest" factory-method="split">
+                <constructor-arg name="commaSeparatedPropertyFileNames" value="test-sample"/>
+            </bean>
+        </property>
         <property name="ignoreUnresolvablePlaceholders" value="true"/>
     </bean>
 

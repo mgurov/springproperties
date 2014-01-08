@@ -28,9 +28,9 @@ public class PropertyFileNamesSplitter {
     private Function<String, String> suffixFunction = Functions.identity();
     private PrototypesNameFinder prototypeNamesFinder = NO_PROTO;
 
-    public List<String> split(String input) {
+    public List<String> split(String commaSeparatedPropertyFileNames) {
         final List<String> result = newArrayList();
-        for (String s : COMMA_SPLITTER.split(input)) {
+        for (String s : COMMA_SPLITTER.split(commaSeparatedPropertyFileNames)) {
             final String wrapped = wrap(s);
             final String prototypes = prototypeNamesFinder.findPrototypeName(wrapped);
             if (prototypes != null) {
