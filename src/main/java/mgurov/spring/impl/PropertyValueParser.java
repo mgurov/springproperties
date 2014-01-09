@@ -18,7 +18,6 @@ public class PropertyValueParser {
         pattern = Pattern.compile(String.format("(%s(.*?)%s)", Pattern.quote(prefix), Pattern.quote(suffix)));
     }
 
-    //TODO: non-String interface for performance?
     public static interface OnStringPartParsedEventListener {
         void onStart();
 
@@ -44,7 +43,6 @@ public class PropertyValueParser {
         int unclaimedPosition = 0;
         while (m.find()) {
             if (m.start() > unclaimedPosition) {
-                //TODO: char sequences?
                 listener.onResolvedStringPart(value.substring(unclaimedPosition, m.start()));
             }
             unclaimedPosition = m.end();

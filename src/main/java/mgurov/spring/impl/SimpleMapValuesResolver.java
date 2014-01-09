@@ -11,24 +11,21 @@ import static com.google.common.collect.Sets.newHashSet;
  * Emulates Spring's {@link org.springframework.core.env.PropertySourcesPropertyResolver} or something around that by simply
  * squashing all the maps into one big one and then processing each key and looking up properties from the squashed map.
  */
-public class SimpleMapsMerger implements MapsMerger {
+public class SimpleMapValuesResolver implements MapValuesResolver {
 
-    private final HashMap<String,String> squashedMap = newHashMap();
+    private Map<String,String> originalMap;
     private final PropertyValueParser propertyValueParser;
 
-    public SimpleMapsMerger(PropertyValueParser propertyValueParser) {
+    public SimpleMapValuesResolver(PropertyValueParser propertyValueParser) {
         this.propertyValueParser = propertyValueParser;
     }
 
     @Override
-    public Map<String, String> merge(Iterable<Map<String, String>> inputs) {
-
-        for (Map<String, String> input : inputs) {
-            squashedMap.putAll(input);
-        }
+    public Map<String, String> merge(Map<String, String> input) {
+        originalMap = input;
 
         final Map<String, String> result = newHashMap();
-        for (Map.Entry<String, String> stringStringEntry : squashedMap.entrySet()) {
+        for (Map.Entry<String, String> stringStringEntry : originalMap.entrySet()) {
             final String key = stringStringEntry.getKey();
             result.put(key, resolveValue(stringStringEntry.getValue(), newHashSet(key)));
         }
@@ -60,7 +57,7 @@ public class SimpleMapsMerger implements MapsMerger {
 
         @Override
         public void onPlaceholderPart(String keyRefererence, String placeholder) {
-            final String value = squashedMap.get(keyRefererence);
+            final String value = originalMap.get(keyRefererence);
             if (null != value) {
                 if (!visitedReferences.add(keyRefererence)) {
                     throw new CircularReferenceException(keyRefererence);

@@ -12,14 +12,13 @@ import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
 
 /**
- * Comparably more complicated than the {@link mgurov.spring.impl.SimpleMapsMerger} way of merging maps. Effectively builds
+ * Comparably more complicated than the {@link SimpleMapValuesResolver} way of merging maps. Effectively builds
  * a composite containing resolved string and "futures" to be resolved. Could potentially be more efficient on large datasets
  * with deep nesting and high degree of key repetition. On the downside futures tend to hang even if overriding properties do not need them
  * which could probably be overidden careful use of {@link java.util.WeakHashMap}
  * This method has a flaw of complicated circular reference detection which hasn't been implemented.
- * TODO: measure
  */
-public class ResolutionTree implements MapsMerger {
+public class ResolutionTree implements MapValuesResolver {
     private final Map<String, EntryPart> keyDefinitions = newHashMap();
     private final Map<String, FutureReference> futures = newHashMap();
     private final PropertyValueParser propertyValueParser;
@@ -29,22 +28,13 @@ public class ResolutionTree implements MapsMerger {
     }
 
     @Override
-    public Map<String, String> merge(Iterable<Map<String, String>> inputs) {
-        //TODO: consider accepting single "presquashed" map.
-
-        final Map<String,String> squashedInput = newHashMap();
-        for (Map<String, String> input : inputs) {
-            squashedInput.putAll(input);
-        }
-
-        add(squashedInput);
+    public Map<String, String> merge(Map<String, String> input) {
+        parse(input);
         resolveFutures();
         return valuesToStrings();
     }
 
-
-    //TODO: rename
-    private void add(Map<String, String> input) {
+    private void parse(Map<String, String> input) {
         for (Map.Entry<String, String> sourceMapEntry : input.entrySet()) {
             keyDefinitions.put(sourceMapEntry.getKey(), parseEntry(sourceMapEntry.getValue()));
         }
